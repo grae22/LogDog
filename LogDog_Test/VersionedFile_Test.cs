@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using NUnit.Framework;
 using LogDog;
 using Moq;
@@ -56,6 +57,26 @@ namespace LogDog_Test
       _testObject.AddVersion(file.Object);
 
       Assert.AreEqual(1, _testObject.FileVersions.Count);
+    }
+
+    //-------------------------------------------------------------------------
+
+    [Test]
+    public void SortNewestToOldest()
+    {
+      var fileOlder = new Mock<IFile>();
+      fileOlder.SetupGet(x => x.Path).Returns("abc");
+      fileOlder.SetupGet(x => x.LastModified).Returns(new DateTime(0));
+
+      var fileNewer = new Mock<IFile>();
+      fileNewer.SetupGet(x => x.Path).Returns("def");
+      fileNewer.SetupGet(x => x.LastModified).Returns(new DateTime(1));
+
+      _testObject.AddVersion(fileOlder.Object);
+      _testObject.AddVersion(fileNewer.Object);
+
+      Assert.AreSame(fileNewer.Object, _testObject.FileVersions[0]);
+      Assert.AreSame(fileOlder.Object, _testObject.FileVersions[1]);
     }
 
     //-------------------------------------------------------------------------
