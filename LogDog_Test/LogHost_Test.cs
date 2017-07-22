@@ -1,5 +1,6 @@
 ﻿using System.IO.Abstractions;
 using System.Net;
+using System.Linq;
 using NUnit.Framework;
 using Moq;
 using LogDog;
@@ -25,8 +26,9 @@ namespace LogDog_Test
       _testObject =
         new LogHost(
           "TestObject",
-          new IPAddress(new byte[] { 1, 2, 3, 4 }),
-          new string[] { @"\logs" },
+          new IPAddress(new byte[] {1, 2, 3, 4}),
+          new[] {@"\logs\"},
+          "*.log",
           _fileSystem.Object);
     }
 
@@ -36,30 +38,30 @@ namespace LogDog_Test
     public void NameAndIp()
     {
       Assert.AreEqual("TestObject", _testObject.Name);
-      Assert.AreEqual(new IPAddress(new byte[] { 1, 2, 3, 4 }), _testObject.Ip);
+      Assert.AreEqual(new IPAddress(new byte[] {1, 2, 3, 4}), _testObject.Ip);
     }
 
     //-------------------------------------------------------------------------
 
     [Test]
-    public void ReturnsLogFilesOnly()
+    public void LogFilePaths()
     {
       _fileSystem.Setup(
         x => x
           .Directory
-          .GetFiles(It.IsAny<string>()))
+          .GetFiles(It.IsAny<string>(), It.IsAny<string>()))
           .Returns(
-            new string[]
+            new[]
             {
               "file1.log",
-              "file2.txt",
-              "file3.txt"
+              "file2.log"
             });
 
-      // TODO: Continue here...
-      //Assert.AreEqual(2, _testObject.LogFilePaths.Count);
-      //Assert.True(_testObject.LogFilePaths.Contains(@"\\1.2.3.4\logs\file1.log"));
-      //Assert.True(_testObject.LogFilePaths.Contains(@"\\1.2.3.4\logs\file3.log"));
+      _testObject.RefreshLogFilePaths();
+
+      Assert.AreEqual(2, _testObject.LogFilePaths.Count);
+      Assert.True(_testObject.LogFilePaths.Contains(@"file1.log"));
+      Assert.True(_testObject.LogFilePaths.Contains(@"file2.log"));
     }
 
     //-------------------------------------------------------------------------
