@@ -8,12 +8,12 @@ using LogDog;
 namespace LogDog_Test
 {
   [TestFixture]
-  [Category("Log")]
-  internal class LogHost_Test
+  [Category("FileHost")]
+  internal class FileHost_Test
   {
     //-------------------------------------------------------------------------
 
-    private LogHost _testObject;
+    private FileHost _testObject;
     private Mock<IFileSystem> _fileSystem;
 
     //-------------------------------------------------------------------------
@@ -24,7 +24,7 @@ namespace LogDog_Test
       _fileSystem = new Mock<IFileSystem>();
 
       _testObject =
-        new LogHost(
+        new FileHost(
           "TestObject",
           new IPAddress(new byte[] {1, 2, 3, 4}),
           new[] {@"\logs\"},
@@ -44,7 +44,7 @@ namespace LogDog_Test
     //-------------------------------------------------------------------------
 
     [Test]
-    public void LogFilePaths()
+    public void FilePaths()
     {
       _fileSystem.Setup(
         x => x
@@ -57,11 +57,11 @@ namespace LogDog_Test
               "file2.log"
             });
 
-      _testObject.RefreshLogFilePaths();
+      _testObject.RefreshFilePaths();
 
-      Assert.AreEqual(2, _testObject.LogFilePaths.Count);
-      Assert.True(_testObject.LogFilePaths.Contains(@"file1.log"));
-      Assert.True(_testObject.LogFilePaths.Contains(@"file2.log"));
+      Assert.AreEqual(2, _testObject.FilePaths.Count);
+      Assert.True(_testObject.FilePaths.Contains(@"file1.log"));
+      Assert.True(_testObject.FilePaths.Contains(@"file2.log"));
     }
 
     //-------------------------------------------------------------------------

@@ -1,26 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.IO.Abstractions;
-using System.Linq;
 using System.Net;
 
 namespace LogDog
 {
-  internal class LogHost
+  internal class FileHost
   {
     //-------------------------------------------------------------------------
 
     public string Name { get; }
     public IPAddress Ip { get; }
-    public IReadOnlyList<string> LogFilePaths { get; }
+    public IReadOnlyList<string> FilePaths { get; }
 
     private readonly List<string> _pathsToMonitor;
     private readonly string _filenameFilter;
     private readonly IFileSystem _fileSystem;
-    private readonly List<string> _logFilePaths = new List<string>();
+    private readonly List<string> _filePaths = new List<string>();
 
     //-------------------------------------------------------------------------
 
-    public LogHost(string name,
+    public FileHost(string name,
                    IPAddress ip,
                    IEnumerable<string> pathsToMonitor,
                    string filenameFilter,
@@ -31,12 +30,12 @@ namespace LogDog
       _pathsToMonitor = new List<string>(pathsToMonitor);
       _filenameFilter = filenameFilter;
       _fileSystem = fileSystem;
-      LogFilePaths = _logFilePaths;
+      FilePaths = _filePaths;
     }
 
     //-------------------------------------------------------------------------
 
-    public void RefreshLogFilePaths()
+    public void RefreshFilePaths()
     {
       foreach (var path in _pathsToMonitor)
       {
@@ -47,7 +46,7 @@ namespace LogDog
 
         var fullPath = $@"\\{Ip}\{pathWithoutLeadingOrTrailingPathSeparators}\";
 
-        _logFilePaths.AddRange(
+        _filePaths.AddRange(
           _fileSystem.Directory.GetFiles(
             fullPath,
             _filenameFilter));
