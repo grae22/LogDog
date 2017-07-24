@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
 using System.Net;
 
@@ -54,7 +55,8 @@ namespace LogDog
         _filePaths.AddRange(
           _fileSystem.Directory.GetFiles(
             fullPath,
-            _filenameFilter));
+            _filenameFilter,
+            SearchOption.AllDirectories));
       }
     }
 

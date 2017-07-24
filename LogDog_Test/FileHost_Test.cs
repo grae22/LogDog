@@ -1,4 +1,5 @@
-﻿using System.IO.Abstractions;
+﻿using System.IO;
+using System.IO.Abstractions;
 using System.Net;
 using System.Linq;
 using NUnit.Framework;
@@ -49,7 +50,7 @@ namespace LogDog_Test
       _fileSystem.Setup(
         x => x
           .Directory
-          .GetFiles(It.IsAny<string>(), It.IsAny<string>()))
+          .GetFiles(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SearchOption>()))
           .Returns(
             new[]
             {
