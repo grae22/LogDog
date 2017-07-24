@@ -33,12 +33,9 @@ namespace LogDog
     private static void BuildContextMenu(ContextMenu menu)
     {
       var hosts = new WindowsHostsFile(
-        Settings.Default.HostsFilename,
+        Environment.ExpandEnvironmentVariables(Settings.Default.HostsFilename),
         Settings.Default.HostFileBlockStart,
         Settings.Default.HostFileBlockEnd);
-        //$@"{Environment.GetEnvironmentVariable("windir")}\system32\drivers\etc\hosts",
-        //"#-- Short names",
-        //"#--");
 
       string[] pathsToMonitor = Settings.Default.FoldersToMonitor.Split(';');
 
@@ -49,7 +46,7 @@ namespace LogDog
         var fileHost = new FileHost(
           host.Key,
           host.Value,
-          pathsToMonitor,//new[] {@"c$\MGSLog", @"m$\MGSLog"},
+          pathsToMonitor,
           Settings.Default.FilenameFilter,
           new FileSystem());
 
