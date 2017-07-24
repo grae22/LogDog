@@ -1,6 +1,4 @@
-﻿// TODO: AddFile() must handle base-filename casing.
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace LogDog
 {
@@ -23,14 +21,14 @@ namespace LogDog
 
     public void AddFile(IFile file)
     {
-      string baseFilename = FilenameMatcher.ExtractBaseFilename(file.Path);
+      string baseFilenameLower = FilenameMatcher.ExtractHostQualifiedBaseFilename(file).ToLower();
 
-      if (_files.ContainsKey(baseFilename) == false)
+      if (_files.ContainsKey(baseFilenameLower) == false)
       {
-        _files.Add(baseFilename, new VersionedFile(baseFilename));
+        _files.Add(baseFilenameLower, new VersionedFile(file.Path));
       }
 
-      _files[baseFilename].AddVersion(file);
+      _files[baseFilenameLower].AddVersion(file);
     }
 
     //-------------------------------------------------------------------------

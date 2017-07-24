@@ -27,8 +27,9 @@ namespace LogDog_Test
     {
       var file = new Mock<IFile>();
       file.SetupGet(x => x.Path).Returns("filename");
+      file.SetupGet(x => x.HostName).Returns("host");
 
-      string baseFilename = FilenameMatcher.ExtractBaseFilename(file.Object.Path);
+      string baseFilename = FilenameMatcher.ExtractHostQualifiedBaseFilename(file.Object);
 
       _testObject.AddFile(file.Object);
 
@@ -41,13 +42,15 @@ namespace LogDog_Test
     public void AddUnrelatedFiles()
     {
       var file1 = new Mock<IFile>();
-      file1.SetupGet(x => x.Path).Returns("filenameA");
+      file1.SetupGet(x => x.Path).Returns("filename");
+      file1.SetupGet(x => x.HostName).Returns("host1");
 
       var file2 = new Mock<IFile>();
-      file2.SetupGet(x => x.Path).Returns("filenameB");
+      file2.SetupGet(x => x.Path).Returns("filename");
+      file2.SetupGet(x => x.HostName).Returns("host2");
 
-      string baseFilename1 = FilenameMatcher.ExtractBaseFilename(file1.Object.Path);
-      string baseFilename2 = FilenameMatcher.ExtractBaseFilename(file2.Object.Path);
+      string baseFilename1 = FilenameMatcher.ExtractHostQualifiedBaseFilename(file1.Object);
+      string baseFilename2 = FilenameMatcher.ExtractHostQualifiedBaseFilename(file2.Object);
 
       _testObject.AddFile(file1.Object);
       _testObject.AddFile(file2.Object);
@@ -63,11 +66,13 @@ namespace LogDog_Test
     {
       var file1 = new Mock<IFile>();
       file1.SetupGet(x => x.Path).Returns("filename_2017.1");
+      file1.SetupGet(x => x.HostName).Returns("host");
 
       var file2 = new Mock<IFile>();
       file2.SetupGet(x => x.Path).Returns("filename_2017.2");
+      file2.SetupGet(x => x.HostName).Returns("host");
 
-      string baseFilename = FilenameMatcher.ExtractBaseFilename(file1.Object.Path);
+      string baseFilename = FilenameMatcher.ExtractHostQualifiedBaseFilename(file1.Object);
 
       _testObject.AddFile(file1.Object);
       _testObject.AddFile(file2.Object);

@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using Moq;
 using LogDog;
 
 namespace LogDog_Test
@@ -27,6 +28,20 @@ namespace LogDog_Test
       Assert.AreEqual(
         "Test-Object",
         FilenameMatcher.ExtractBaseFilename("Test-Object_2017-07-22.log"));
+    }
+
+    //-------------------------------------------------------------------------
+
+    [Test]
+    public void ExtractsHostQualifiedBaseFilename()
+    {
+      var file = new Mock<IFile>();
+      file.SetupGet(x => x.Path).Returns("Test-Object");
+      file.SetupGet(x => x.HostName).Returns("Host");
+
+      Assert.AreEqual(
+        "Host.Test-Object",
+        FilenameMatcher.ExtractHostQualifiedBaseFilename(file.Object));
     }
 
     //-------------------------------------------------------------------------

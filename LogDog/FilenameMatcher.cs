@@ -35,6 +35,13 @@ namespace LogDog
 
     //-------------------------------------------------------------------------
 
+    public static string ExtractHostQualifiedBaseFilename(IFile file)
+    {
+      return $"{file.HostName}.{ExtractBaseFilename(file.Path)}";
+    }
+
+    //-------------------------------------------------------------------------
+
     public string BaseFilename { get; }
 
     private readonly string _baseFilenameLower;
