@@ -12,20 +12,35 @@ namespace LogDog
     [STAThread]
     public static void Main()
     {
-      Application.EnableVisualStyles();
-      Application.SetCompatibleTextRenderingDefault(false);
-
-      var systemTrayIcon = new NotifyIcon()
+      try
       {
-        ContextMenu = new ContextMenu(),
-        Icon = Resources.icon,
-        Text = Application.ProductName,
-        Visible = true
-      };
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
 
-      BuildContextMenu(systemTrayIcon.ContextMenu);
+        var systemTrayIcon = new NotifyIcon()
+        {
+          ContextMenu = new ContextMenu(),
+          Icon = Resources.icon,
+          Text = Application.ProductName,
+          Visible = true
+        };
 
-      Application.Run();
+        BuildContextMenu(systemTrayIcon.ContextMenu);
+
+        Application.Run();
+
+        systemTrayIcon.Dispose();
+      }
+      catch (Exception e)
+      {
+        MessageBox.Show(
+          $@"Unhandled exception ""{e.Message}""" +
+          $@"{Environment.NewLine}{Environment.NewLine}" +
+          $@"{e.StackTrace}",
+          "Error",
+          MessageBoxButtons.OK,
+          MessageBoxIcon.Error);
+      }
     }
 
     //-------------------------------------------------------------------------
