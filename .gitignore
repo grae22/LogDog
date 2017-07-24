@@ -3,7 +3,8 @@ work_app.config
 *.suo
 *.user
 
-bin/
+debug/
+release/
 obj/
 generatedreports/
 packages/
