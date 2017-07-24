@@ -10,6 +10,7 @@ namespace LogDog
 
     public string BaseFilename { get; }
     public IReadOnlyList<IFile> FileVersions { get; }
+    public event EventHandler FileAdded;
 
     private readonly List<IFile> _fileVersions = new List<IFile>();
 
@@ -24,7 +25,8 @@ namespace LogDog
 
     //-------------------------------------------------------------------------
 
-    public void AddVersion(IFile file)
+    public void AddVersion(IFile file,
+                           bool suppressFileAddedEvent = false)
     {
       if (ContainsFile(file.Path))
       {
@@ -34,6 +36,18 @@ namespace LogDog
       _fileVersions.Add(file);
 
       Sort();
+
+      if (suppressFileAddedEvent == false)
+      {
+        OnFileAdded();
+      }
+    }
+
+    //-------------------------------------------------------------------------
+
+    protected virtual void OnFileAdded()
+    {
+      FileAdded?.Invoke(this, EventArgs.Empty);
     }
 
     //-------------------------------------------------------------------------

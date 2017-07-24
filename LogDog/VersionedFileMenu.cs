@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System;
+using System.Windows.Forms;
 
 namespace LogDog
 {
@@ -17,18 +18,13 @@ namespace LogDog
       MenuItem = new MenuItem();
       _file = file;
 
+      _file.FileAdded += OnFileAdded;
+
       BuildMenu();
     }
 
     //-------------------------------------------------------------------------
-
-    public void Update()
-    {
-      BuildMenu();  // TODO: Rather have VersionedFile raise an event that this object will handle.
-    }
-
-    //-------------------------------------------------------------------------
-
+    
     private void BuildMenu()
     {
       MenuItem.Text = _file.BaseFilename;
@@ -48,6 +44,13 @@ namespace LogDog
           new MenuItem(
             file.LastModified.ToString("yyyy-MM-dd HH:mm")));
       }
+    }
+
+    //-------------------------------------------------------------------------
+
+    private void OnFileAdded(object sender, EventArgs args)
+    {
+      BuildSubMenus();
     }
 
     //-------------------------------------------------------------------------

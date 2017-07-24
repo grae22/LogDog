@@ -1,4 +1,4 @@
-﻿// TODO: There is bug where if a valid host exists on the last line of the file it won't be picked up.
+﻿// BUG: If a valid host exists on the last line of the file it won't be picked up.
 
 using System.IO;
 using System.Reflection;

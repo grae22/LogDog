@@ -53,8 +53,6 @@ namespace LogDog_Test
       _file.AddVersion(file2.Object);
       _file.AddVersion(file3.Object);
 
-      _testObject.Update();
-
       Assert.AreEqual("2017-07-24 00:00", _testObject.MenuItem.MenuItems[0].Text);
       Assert.AreEqual("2017-07-23 00:00", _testObject.MenuItem.MenuItems[1].Text);
       Assert.AreEqual("2017-07-21 23:59", _testObject.MenuItem.MenuItems[2].Text);

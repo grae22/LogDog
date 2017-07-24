@@ -1,6 +1,4 @@
-﻿// TODO: Register for events relating to the hosts file so we can reparse it when it changes.
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
