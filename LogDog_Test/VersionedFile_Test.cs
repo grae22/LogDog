@@ -67,8 +67,8 @@ namespace LogDog_Test
       _testObject.AddVersion(fileOlder);
       _testObject.AddVersion(fileNewer);
 
-      Assert.AreSame(fileNewer, _testObject.FileVersions[0]);
-      Assert.AreSame(fileOlder, _testObject.FileVersions[1]);
+      Assert.AreEqual(1, _testObject.FileVersions[0].LastModified.Ticks);
+      Assert.AreEqual(0, _testObject.FileVersions[1].LastModified.Ticks);
     }
 
     //-------------------------------------------------------------------------

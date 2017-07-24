@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.IO.Abstractions;
 using System.Net;
 
@@ -47,7 +46,7 @@ namespace LogDog
 
         var fullPath = $@"\\{Ip}\{pathWithoutLeadingOrTrailingPathSeparators}\";
 
-        if (Directory.Exists(fullPath) == false)
+        if (_fileSystem.Directory.Exists(fullPath) == false)
         {
           continue;
         }

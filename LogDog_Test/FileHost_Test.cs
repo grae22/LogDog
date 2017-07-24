@@ -57,6 +57,8 @@ namespace LogDog_Test
               "file2.log"
             });
 
+      _fileSystem.Setup(x => x.Directory.Exists(It.IsAny<string>())).Returns(true);
+
       _testObject.RefreshFilePaths();
 
       Assert.AreEqual(2, _testObject.FilePaths.Count);

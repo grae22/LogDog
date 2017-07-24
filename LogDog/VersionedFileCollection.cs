@@ -22,11 +22,12 @@ namespace LogDog
     public void AddFile(FileInfo file,
                         bool suppressFileAddedEvent = false)
     {
+      string baseFilename = FilenameMatcher.ExtractBaseFilename(file.Path);
       string baseFilenameLower = FilenameMatcher.ExtractHostQualifiedBaseFilename(file).ToLower();
 
       if (_files.ContainsKey(baseFilenameLower) == false)
       {
-        _files.Add(baseFilenameLower, new VersionedFile(file.Path));
+        _files.Add(baseFilenameLower, new VersionedFile(baseFilename));
       }
 
       _files[baseFilenameLower].AddVersion(file, suppressFileAddedEvent);
