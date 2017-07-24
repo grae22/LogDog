@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using Moq;
 using LogDog;
 
@@ -25,13 +26,11 @@ namespace LogDog_Test
     [Test]
     public void AddFile()
     {
-      var file = new Mock<IFile>();
-      file.SetupGet(x => x.Path).Returns("filename");
-      file.SetupGet(x => x.HostName).Returns("host");
+      var file = CreateFileInfo();
 
-      string baseFilename = FilenameMatcher.ExtractHostQualifiedBaseFilename(file.Object);
+      string baseFilename = FilenameMatcher.ExtractHostQualifiedBaseFilename(file).ToLower();
 
-      _testObject.AddFile(file.Object);
+      _testObject.AddFile(file);
 
       Assert.True(_testObject.Files.ContainsKey(baseFilename));
     }
@@ -41,19 +40,14 @@ namespace LogDog_Test
     [Test]
     public void AddUnrelatedFiles()
     {
-      var file1 = new Mock<IFile>();
-      file1.SetupGet(x => x.Path).Returns("filename");
-      file1.SetupGet(x => x.HostName).Returns("host1");
+      var file1 = CreateFileInfo(hostName: "host1");
+      var file2 = CreateFileInfo(hostName: "host2");
 
-      var file2 = new Mock<IFile>();
-      file2.SetupGet(x => x.Path).Returns("filename");
-      file2.SetupGet(x => x.HostName).Returns("host2");
+      string baseFilename1 = FilenameMatcher.ExtractHostQualifiedBaseFilename(file1).ToLower();
+      string baseFilename2 = FilenameMatcher.ExtractHostQualifiedBaseFilename(file2).ToLower();
 
-      string baseFilename1 = FilenameMatcher.ExtractHostQualifiedBaseFilename(file1.Object);
-      string baseFilename2 = FilenameMatcher.ExtractHostQualifiedBaseFilename(file2.Object);
-
-      _testObject.AddFile(file1.Object);
-      _testObject.AddFile(file2.Object);
+      _testObject.AddFile(file1);
+      _testObject.AddFile(file2);
 
       Assert.True(_testObject.Files.ContainsKey(baseFilename1));
       Assert.True(_testObject.Files.ContainsKey(baseFilename2));
@@ -64,21 +58,30 @@ namespace LogDog_Test
     [Test]
     public void AddRelatedFiles()
     {
-      var file1 = new Mock<IFile>();
-      file1.SetupGet(x => x.Path).Returns("filename_2017.1");
-      file1.SetupGet(x => x.HostName).Returns("host");
+      var file1 = CreateFileInfo("filename_2017.1");
+      var file2 = CreateFileInfo("filename_2017.2");
 
-      var file2 = new Mock<IFile>();
-      file2.SetupGet(x => x.Path).Returns("filename_2017.2");
-      file2.SetupGet(x => x.HostName).Returns("host");
+      string baseFilename = FilenameMatcher.ExtractHostQualifiedBaseFilename(file1).ToLower();
 
-      string baseFilename = FilenameMatcher.ExtractHostQualifiedBaseFilename(file1.Object);
-
-      _testObject.AddFile(file1.Object);
-      _testObject.AddFile(file2.Object);
+      _testObject.AddFile(file1);
+      _testObject.AddFile(file2);
 
       Assert.AreEqual(1, _testObject.Files.Count, "Should only be 1 versioned file instance as files are related.");
       Assert.True(_testObject.Files.ContainsKey(baseFilename));
+    }
+
+    //=========================================================================
+
+    private FileInfo CreateFileInfo(string path = "path",
+                                    string hostName = "Host",
+                                    DateTime? lastModified = null )
+    {
+      return new FileInfo()
+      {
+        Path = path,
+        HostName = hostName,
+        LastModified = lastModified ?? DateTime.Now
+      };
     }
 
     //-------------------------------------------------------------------------

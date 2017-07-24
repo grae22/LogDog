@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using NUnit.Framework;
 using LogDog;
-using Moq;
 
 namespace LogDog_Test
 {
@@ -36,13 +34,13 @@ namespace LogDog_Test
     [Test]
     public void AddVersion()
     {
-      var file = CreateMockFile();
+      var file = CreateFileInfo();
 
-      _testObject.AddVersion(file.Object);
+      _testObject.AddVersion(file);
 
       Assert.NotNull(
         _testObject.FileVersions.Single(
-          x => x.Path == file.Object.Path));
+          x => x.Path == file.Path));
     }
 
     //-------------------------------------------------------------------------
@@ -50,10 +48,10 @@ namespace LogDog_Test
     [Test]
     public void PreventMultipleAdditionOfVersion()
     {
-      var file = CreateMockFile();
+      var file = CreateFileInfo();
 
-      _testObject.AddVersion(file.Object);
-      _testObject.AddVersion(file.Object);
+      _testObject.AddVersion(file);
+      _testObject.AddVersion(file);
 
       Assert.AreEqual(1, _testObject.FileVersions.Count);
     }
@@ -63,14 +61,14 @@ namespace LogDog_Test
     [Test]
     public void SortNewestToOldest()
     {
-      var fileOlder = CreateMockFile(path: "abc", lastModified: new DateTime(0));
-      var fileNewer = CreateMockFile(path: "def", lastModified: new DateTime(1));
+      var fileOlder = CreateFileInfo(path: "abc", lastModified: new DateTime(0));
+      var fileNewer = CreateFileInfo(path: "def", lastModified: new DateTime(1));
 
-      _testObject.AddVersion(fileOlder.Object);
-      _testObject.AddVersion(fileNewer.Object);
+      _testObject.AddVersion(fileOlder);
+      _testObject.AddVersion(fileNewer);
 
-      Assert.AreSame(fileNewer.Object, _testObject.FileVersions[0]);
-      Assert.AreSame(fileOlder.Object, _testObject.FileVersions[1]);
+      Assert.AreSame(fileNewer, _testObject.FileVersions[0]);
+      Assert.AreSame(fileOlder, _testObject.FileVersions[1]);
     }
 
     //-------------------------------------------------------------------------
@@ -78,11 +76,11 @@ namespace LogDog_Test
     [Test]
     public void EventRaisedWhenFileAdded()
     {
-      var file = CreateMockFile();
+      var file = CreateFileInfo();
 
       _testObject.FileAdded += (sender, args) => { Assert.Pass(); };
 
-      _testObject.AddVersion(file.Object);
+      _testObject.AddVersion(file);
 
       Assert.Fail();
     }
@@ -92,28 +90,27 @@ namespace LogDog_Test
     [Test]
     public void NoEventRaisedWhenFileAddedIfEventSuppressed()
     {
-      var file = CreateMockFile();
+      var file = CreateFileInfo();
 
       _testObject.FileAdded += (sender, args) => { Assert.Fail(); };
 
-      _testObject.AddVersion(file.Object, true);
+      _testObject.AddVersion(file, true);
 
       Assert.Pass();
     }
 
     //=========================================================================
 
-    private Mock<IFile> CreateMockFile(string path = "path",
-                                       string hostName = "Host",
-                                       DateTime? lastModified = null )
+    private FileInfo CreateFileInfo(string path = "path",
+                                    string hostName = "Host",
+                                    DateTime? lastModified = null )
     {
-      var mock = new Mock<IFile>();
-
-      mock.SetupGet(x => x.Path).Returns(path);
-      mock.SetupGet(x => x.HostName).Returns(hostName);
-      mock.SetupGet(x => x.LastModified).Returns(lastModified ?? DateTime.Now);
-
-      return mock;
+      return new FileInfo()
+      {
+        Path = path,
+        HostName = hostName,
+        LastModified = lastModified ?? DateTime.Now
+      };
     }
 
     //-------------------------------------------------------------------------

@@ -35,13 +35,15 @@ namespace LogDog_Test
     [Test]
     public void ExtractsHostQualifiedBaseFilename()
     {
-      var file = new Mock<IFile>();
-      file.SetupGet(x => x.Path).Returns("Test-Object");
-      file.SetupGet(x => x.HostName).Returns("Host");
+      var file = new FileInfo()
+      {
+        Path = "Test-Object",
+        HostName = "Host"
+      };
 
       Assert.AreEqual(
         "Host.Test-Object",
-        FilenameMatcher.ExtractHostQualifiedBaseFilename(file.Object));
+        FilenameMatcher.ExtractHostQualifiedBaseFilename(file));
     }
 
     //-------------------------------------------------------------------------

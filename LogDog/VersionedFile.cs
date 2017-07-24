@@ -9,10 +9,10 @@ namespace LogDog
     //-------------------------------------------------------------------------
 
     public string BaseFilename { get; }
-    public IReadOnlyList<IFile> FileVersions { get; }
+    public IReadOnlyList<FileInfo> FileVersions { get; }
     public event EventHandler FileAdded;
 
-    private readonly List<IFile> _fileVersions = new List<IFile>();
+    private readonly List<FileInfo> _fileVersions = new List<FileInfo>();
 
     //-------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ namespace LogDog
 
     //-------------------------------------------------------------------------
 
-    public void AddVersion(IFile file,
+    public void AddVersion(FileInfo file,
                            bool suppressFileAddedEvent = false)
     {
       if (ContainsFile(file.Path))
@@ -55,8 +55,8 @@ namespace LogDog
     private bool ContainsFile(string path)
     {
       return
-        _fileVersions.SingleOrDefault(
-          x => x.Path.Equals(path, StringComparison.OrdinalIgnoreCase)) != null;
+        _fileVersions.Count(
+          x => x.Path.Equals(path, StringComparison.OrdinalIgnoreCase)) > 0;
     }
 
     //-------------------------------------------------------------------------

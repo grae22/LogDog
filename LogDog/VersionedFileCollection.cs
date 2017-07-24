@@ -19,7 +19,8 @@ namespace LogDog
 
     //-------------------------------------------------------------------------
 
-    public void AddFile(IFile file)
+    public void AddFile(FileInfo file,
+                        bool suppressFileAddedEvent = false)
     {
       string baseFilenameLower = FilenameMatcher.ExtractHostQualifiedBaseFilename(file).ToLower();
 
@@ -28,7 +29,7 @@ namespace LogDog
         _files.Add(baseFilenameLower, new VersionedFile(file.Path));
       }
 
-      _files[baseFilenameLower].AddVersion(file);
+      _files[baseFilenameLower].AddVersion(file, suppressFileAddedEvent);
     }
 
     //-------------------------------------------------------------------------

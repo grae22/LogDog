@@ -38,7 +38,7 @@ namespace LogDog
     {
       MenuItem.MenuItems.Clear();
 
-      foreach (IFile file in _file.FileVersions)
+      foreach (FileInfo file in _file.FileVersions)
       {
         MenuItem.MenuItems.Add(
           new MenuItem(

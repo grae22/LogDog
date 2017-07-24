@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
 using System.Net;
 
@@ -45,6 +46,11 @@ namespace LogDog
             .TrimEnd('\\', '/');
 
         var fullPath = $@"\\{Ip}\{pathWithoutLeadingOrTrailingPathSeparators}\";
+
+        if (Directory.Exists(fullPath) == false)
+        {
+          continue;
+        }
 
         _filePaths.AddRange(
           _fileSystem.Directory.GetFiles(
