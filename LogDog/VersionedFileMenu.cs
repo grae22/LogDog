@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows.Forms;
 
 namespace LogDog
@@ -42,7 +43,8 @@ namespace LogDog
       {
         MenuItem.MenuItems.Add(
           new MenuItem(
-            file.LastModified.ToString("yyyy-MM-dd HH:mm")));
+            file.LastModified.ToString("yyyy-MM-dd HH:mm"),
+            (sender, args) => { Process.Start(file.Path); }));
       }
     }
 
