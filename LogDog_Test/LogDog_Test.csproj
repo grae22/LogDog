@@ -56,6 +56,7 @@
     <Compile Include="FileHost_Test.cs" />
     <Compile Include="FilenameMatcher_Test.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VersionedFileCollection_Test.cs" />
     <Compile Include="VersionedFile_Test.cs" />
     <Compile Include="WindowsHostsFile_Test.cs" />
   </ItemGroup>

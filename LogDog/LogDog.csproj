@@ -43,6 +43,7 @@
     <Compile Include="IFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VersionedFile.cs" />
+    <Compile Include="VersionedFileCollection.cs" />
     <Compile Include="WindowsHostsFile.cs" />
   </ItemGroup>
   <ItemGroup>
