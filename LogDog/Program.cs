@@ -37,15 +37,16 @@ namespace LogDog
 
         ExtractFavouritesFromSettings();
 
-        _systemTrayIcon = new NotifyIcon()
+        _systemTrayIcon = new NotifyIcon
         {
           ContextMenu = new ContextMenu(),
-          Icon = new Icon(Resources.icon, new Size(32, 32)),
+          Icon = Resources.icon,
           Text = Application.ProductName,
           Visible = true
         };
         _systemTrayIcon.Click += OnIconClicked;
 
+        AddUpdatingMenuItem(_systemTrayIcon.ContextMenu);
         AddExitOption(_systemTrayIcon.ContextMenu);
 
         InitialiseRunner();
@@ -253,6 +254,20 @@ namespace LogDog
         new MenuItem(
           "E&xit",
           (sender, args) => Shutdown()));
+    }
+
+    //-------------------------------------------------------------------------
+
+    private static void AddUpdatingMenuItem(ContextMenu menu)
+    {
+      var menuItem = new MenuItem
+      {
+        Text = "Updating...",
+        Enabled = false
+      };
+
+      menuItem.Click += (sender, args) => Shutdown();
+      menu.MenuItems.Add(menuItem);
     }
 
     //-------------------------------------------------------------------------
