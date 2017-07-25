@@ -50,7 +50,7 @@ namespace LogDog_Test
       _fileSystem.Setup(
         x => x
           .Directory
-          .GetFiles(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SearchOption>()))
+          .EnumerateFiles(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SearchOption>()))
           .Returns(
             new[]
             {

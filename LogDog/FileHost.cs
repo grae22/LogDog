@@ -53,7 +53,7 @@ namespace LogDog
         }
 
         _filePaths.AddRange(
-          _fileSystem.Directory.GetFiles(
+          _fileSystem.Directory.EnumerateFiles(
             fullPath,
             _filenameFilter,
             SearchOption.AllDirectories));
