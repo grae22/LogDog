@@ -2,6 +2,7 @@
 // TODO: Optimise the file scanning logic.
 // TODO: Detect when the hosts file changes and reload everything.
 // TODO: Icon for the 'exit' menu option.
+// TODO: Search function.
 
 using System;
 using System.Collections.Generic;
