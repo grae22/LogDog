@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using NUnit.Framework;
 using Moq;
 using LogDog;
@@ -68,6 +69,24 @@ namespace LogDog_Test
 
       Assert.AreEqual(1, _testObject.Files.Count, "Should only be 1 versioned file instance as files are related.");
       Assert.True(_testObject.Files.ContainsKey(baseFilename));
+    }
+
+    //-------------------------------------------------------------------------
+
+    [Test]
+    public void FilesSortedByQualifiedBaseFilename()
+    {
+      var file1 = CreateFileInfo("filenameAbc_2017");
+      var file2 = CreateFileInfo("filenameDef_2017");
+
+      _testObject.AddFile(file2);
+      _testObject.AddFile(file1);
+
+      string baseFilename1 = FilenameMatcher.ExtractHostQualifiedBaseFilename(file1);
+      string baseFilename2 = FilenameMatcher.ExtractHostQualifiedBaseFilename(file2);
+
+      Assert.AreEqual(baseFilename1, _testObject.Files.ElementAt(0).Value.BaseFilename);
+      Assert.AreEqual(baseFilename2, _testObject.Files.ElementAt(1).Value.BaseFilename);
     }
 
     //=========================================================================

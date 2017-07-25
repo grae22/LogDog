@@ -8,7 +8,7 @@ namespace LogDog
 
     public IReadOnlyDictionary<string, VersionedFile> Files { get; }
 
-    private readonly Dictionary<string, VersionedFile> _files = new Dictionary<string, VersionedFile>();
+    private readonly SortedDictionary<string, VersionedFile> _files = new SortedDictionary<string, VersionedFile>();
 
     //-------------------------------------------------------------------------
 
