@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -39,7 +40,7 @@ namespace LogDog
         _systemTrayIcon = new NotifyIcon()
         {
           ContextMenu = new ContextMenu(),
-          Icon = Resources.icon,
+          Icon = new Icon(Resources.icon, new Size(32, 32)),
           Text = Application.ProductName,
           Visible = true
         };

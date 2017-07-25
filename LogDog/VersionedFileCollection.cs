@@ -22,17 +22,15 @@ namespace LogDog
     public void AddFile(FileInfo file,
                         bool suppressFileAddedEvent = false)
     {
-      string baseFilename = FilenameMatcher.ExtractBaseFilename(file.Path);
-      string baseFilenameLower = FilenameMatcher.ExtractHostQualifiedBaseFilename(file).ToLower();
+      string qualifiedBaseFilename = FilenameMatcher.ExtractHostQualifiedBaseFilename(file);
+      string qualifiedBaseFilenameLower = qualifiedBaseFilename.ToLower();
 
-      var qualifiedBaseFilename = $"{file.HostName}.{baseFilename}";
-
-      if (_files.ContainsKey(baseFilenameLower) == false)
+      if (_files.ContainsKey(qualifiedBaseFilenameLower) == false)
       {
-        _files.Add(baseFilenameLower, new VersionedFile(qualifiedBaseFilename));
+        _files.Add(qualifiedBaseFilenameLower, new VersionedFile(qualifiedBaseFilename));
       }
 
-      _files[baseFilenameLower].AddVersion(file, suppressFileAddedEvent);
+      _files[qualifiedBaseFilenameLower].AddVersion(file, suppressFileAddedEvent);
     }
 
     //-------------------------------------------------------------------------

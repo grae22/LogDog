@@ -37,7 +37,7 @@ namespace LogDog
 
     public static string ExtractHostQualifiedBaseFilename(FileInfo file)
     {
-      return $"{file.HostName}.{ExtractBaseFilename(file.Path)}";
+      return $"({file.HostName}) {ExtractBaseFilename(file.Path)}";
     }
 
     //-------------------------------------------------------------------------

@@ -1,6 +1,5 @@
 ﻿using System;
 using NUnit.Framework;
-using Moq;
 using LogDog;
 
 namespace LogDog_Test

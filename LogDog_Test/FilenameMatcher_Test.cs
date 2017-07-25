@@ -42,7 +42,7 @@ namespace LogDog_Test
       };
 
       Assert.AreEqual(
-        "Host.Test-Object",
+        "(Host) Test-Object",
         FilenameMatcher.ExtractHostQualifiedBaseFilename(file));
     }
 
