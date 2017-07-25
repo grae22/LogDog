@@ -94,5 +94,17 @@ namespace LogDog {
                 this["HostsFilename"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Favourites {
+            get {
+                return ((string)(this["Favourites"]));
+            }
+            set {
+                this["Favourites"] = value;
+            }
+        }
     }
 }

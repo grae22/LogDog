@@ -8,18 +8,20 @@ namespace LogDog
   {
     //-------------------------------------------------------------------------
 
-    public MenuItem MenuItem { get; }
+    public MenuItem MenuItem { get; } = new MenuItem();
+    public bool IsFavourite { get; private set; }
 
     private readonly VersionedFile _file;
 
     //-------------------------------------------------------------------------
 
-    public VersionedFileMenu(VersionedFile file)
+    public VersionedFileMenu(VersionedFile file,
+                             bool isFavourite = false)
     {
-      MenuItem = new MenuItem();
       _file = file;
-
       _file.FileAdded += OnFileAdded;
+
+      IsFavourite = isFavourite;
 
       BuildMenu();
     }
@@ -28,7 +30,10 @@ namespace LogDog
     
     private void BuildMenu()
     {
+      MenuItem.Tag = this;
       MenuItem.Text = _file.BaseFilename;
+
+      MenuItem.Click += (sender, args) => Process.Start(_file.FileVersions[0].Path);
 
       BuildSubMenus();
     }
@@ -38,6 +43,16 @@ namespace LogDog
     private void BuildSubMenus()
     {
       MenuItem.MenuItems.Clear();
+
+      MenuItem.MenuItems.Add(
+        new MenuItem(
+          "Favourite?",
+          (sender, args) =>
+          {
+            IsFavourite = !IsFavourite;
+            MenuItem.MenuItems[0].Checked = IsFavourite;
+          }));
+      MenuItem.MenuItems[0].Checked = IsFavourite;
 
       foreach (FileInfo file in _file.FileVersions)
       {

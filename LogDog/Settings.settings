@@ -20,5 +20,8 @@
     <Setting Name="HostsFilename" Type="System.String" Scope="User">
       <Value Profile="(Default)">d:\dev\projects\logdog\logdog\bin\hosts</Value>
     </Setting>
+    <Setting Name="Favourites" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -1,6 +1,14 @@
-﻿using System;
+﻿// TODO: This class needs major refactoring.
+// TODO: Optimise the file scanning logic.
+// TODO: Detect when the hosts file changes and reload everything.
+// TODO: Icon for the 'exit' menu option.
+
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -13,6 +21,8 @@ namespace LogDog
     private static Thread _runner;
     private static bool _runnerIsAlive;
     private static NotifyIcon _systemTrayIcon;
+    private static ContextMenu _detailedMenu;
+    private static List<string> _favourites = new List<string>();
 
     //-------------------------------------------------------------------------
 
@@ -24,6 +34,8 @@ namespace LogDog
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
 
+        ExtractFavouritesFromSettings();
+
         _systemTrayIcon = new NotifyIcon()
         {
           ContextMenu = new ContextMenu(),
@@ -31,6 +43,7 @@ namespace LogDog
           Text = Application.ProductName,
           Visible = true
         };
+        _systemTrayIcon.Click += OnIconClicked;
 
         AddExitOption(_systemTrayIcon.ContextMenu);
 
@@ -69,6 +82,13 @@ namespace LogDog
 
     //-------------------------------------------------------------------------
 
+    private static void ExtractFavouritesFromSettings()
+    {
+      _favourites = Settings.Default.Favourites.Split(';').ToList();
+    }
+
+    //-------------------------------------------------------------------------
+
     private static void InitialiseRunner()
     {
       var threadStart = new ThreadStart(Run);
@@ -89,10 +109,12 @@ namespace LogDog
         try
         {
           Cursor.Current = Cursors.WaitCursor;
-          ContextMenu menu = BuildContextMenu();
-          Cursor.Current = Cursors.Default;
 
+          ContextMenu menu;
+          BuildContextMenus(out menu);
           setContextMenu.Invoke(menu);
+
+          Cursor.Current = Cursors.Default;
 
           Thread.Sleep(1000 * 60 * 10);
         }
@@ -109,18 +131,20 @@ namespace LogDog
 
     private static void SetContextMenu(ContextMenu menu)
     {
+      _detailedMenu = menu;
+
       if (_systemTrayIcon == null)
       {
         return;
       }
 
       _systemTrayIcon.ContextMenu?.Dispose();
-      _systemTrayIcon.ContextMenu = menu;
+      _systemTrayIcon.ContextMenu = _detailedMenu;
     }
 
     //-------------------------------------------------------------------------
 
-    private static ContextMenu BuildContextMenu()
+    private static void BuildContextMenus(out ContextMenu detailedMenu)
     {
       ContextMenu menu = new ContextMenu();
 
@@ -168,13 +192,55 @@ namespace LogDog
 
       foreach (var file in files.Files)
       {
-        var subMenu = new VersionedFileMenu(file.Value);
+        bool isFavourite = _favourites.Contains(file.Value.BaseFilename.ToLower());
+
+        var subMenu = new VersionedFileMenu(file.Value, isFavourite);
         menu.MenuItems.Add(subMenu.MenuItem);
       }
 
       AddExitOption(menu);
 
-      return menu;
+      detailedMenu = menu;
+    }
+
+    //-------------------------------------------------------------------------
+
+    private static ContextMenu BuildSimpleMenu(ContextMenu detailedMenu)
+    {
+      _favourites.Clear();
+
+      ContextMenu simpleMenu = new ContextMenu();
+
+      foreach (MenuItem menuItem in detailedMenu.MenuItems)
+      {
+        var versionedFileMenu = menuItem.Tag as VersionedFileMenu;
+
+        if (versionedFileMenu != null &&
+            versionedFileMenu.IsFavourite)
+        {
+          var clonedMenu = menuItem.CloneMenu();
+          clonedMenu.MenuItems.Clear();
+          simpleMenu.MenuItems.Add(clonedMenu);
+
+          _favourites.Add(versionedFileMenu.MenuItem.Text.ToLower());
+        }
+      }
+
+      if (simpleMenu.MenuItems.Count == 0)
+      {
+        simpleMenu.MenuItems.Add(
+          new MenuItem
+          {
+            Text = "[No Favourites]",
+            Enabled = false
+          });
+      }
+
+      Settings.Default.Favourites = string.Join(";", _favourites.ToArray());
+      Settings.Default.Save();
+      Settings.Default.Reload();
+
+      return simpleMenu;
     }
 
     //-------------------------------------------------------------------------
@@ -185,7 +251,32 @@ namespace LogDog
       menu.MenuItems.Add(
         new MenuItem(
           "E&xit",
-          (sender, args) => { Shutdown(); }));
+          (sender, args) => Shutdown()));
+    }
+
+    //-------------------------------------------------------------------------
+
+    private static void OnIconClicked(object sender, EventArgs args)
+    {
+      var mouseArgs = args as MouseEventArgs;
+
+      if (mouseArgs?.Button == MouseButtons.Left)
+      {
+        if (_detailedMenu == null)
+        {
+          return;
+        }
+
+        _systemTrayIcon.ContextMenu = BuildSimpleMenu(_detailedMenu);
+
+        typeof(NotifyIcon)
+          .GetMethod(
+            "ShowContextMenu",
+            BindingFlags.Instance | BindingFlags.NonPublic)
+          .Invoke(_systemTrayIcon, null);
+
+        _systemTrayIcon.ContextMenu = _detailedMenu;
+      }
     }
 
     //-------------------------------------------------------------------------
