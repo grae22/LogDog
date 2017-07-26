@@ -75,5 +75,41 @@ namespace LogDog_Test
     }
 
     //-------------------------------------------------------------------------
+
+    [Test]
+    public void ToggleUnfavourite()
+    {
+      _testObject.MenuItem.MenuItems[0].PerformClick();
+      _testObject.MenuItem.MenuItems[0].PerformClick();
+
+      Assert.False(_testObject.IsFavourite);
+    }
+
+    //-------------------------------------------------------------------------
+
+    [Test]
+    public void EventRaisedOnFavourited()
+    {
+      _testObject.Favourited += (sender, args) => Assert.Pass();
+
+      _testObject.MenuItem.MenuItems[0].PerformClick();
+
+      Assert.Fail();
+    }
+
+    //-------------------------------------------------------------------------
+
+    [Test]
+    public void EventRaisedOnUnfavourited()
+    {
+      _testObject.Unfavourited += (sender, args) => Assert.Pass();
+
+      _testObject.MenuItem.MenuItems[0].PerformClick();
+      _testObject.MenuItem.MenuItems[0].PerformClick();
+
+      Assert.Fail();
+    }
+
+    //-------------------------------------------------------------------------
   }
 }

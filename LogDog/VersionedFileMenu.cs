@@ -10,6 +10,8 @@ namespace LogDog
 
     public MenuItem MenuItem { get; } = new MenuItem();
     public bool IsFavourite { get; private set; }
+    public event EventHandler Favourited;
+    public event EventHandler Unfavourited;
 
     private readonly VersionedFile _file;
 
@@ -44,15 +46,7 @@ namespace LogDog
     {
       MenuItem.MenuItems.Clear();
 
-      MenuItem.MenuItems.Add(
-        new MenuItem(
-          "Favourite?",
-          (sender, args) =>
-          {
-            IsFavourite = !IsFavourite;
-            MenuItem.MenuItems[0].Checked = IsFavourite;
-          }));
-      MenuItem.MenuItems[0].Checked = IsFavourite;
+      AddFavouriteOption();
 
       foreach (FileInfo file in _file.FileVersions)
       {
@@ -61,6 +55,31 @@ namespace LogDog
             file.LastModified.ToString("yyyy-MM-dd HH:mm"),
             (sender, args) => { Process.Start(file.Path); }));
       }
+    }
+
+    //-------------------------------------------------------------------------
+
+    private void AddFavouriteOption()
+    {
+      MenuItem.MenuItems.Add(
+        new MenuItem(
+          "Favourite?",
+          (sender, args) =>
+          {
+            IsFavourite = !IsFavourite;
+            MenuItem.MenuItems[0].Checked = IsFavourite;
+
+            if (IsFavourite)
+            {
+              Favourited?.Invoke(this, EventArgs.Empty);
+            }
+            else
+            {
+              Unfavourited?.Invoke(this, EventArgs.Empty);
+            }
+          }));
+
+      MenuItem.MenuItems[0].Checked = IsFavourite;
     }
 
     //-------------------------------------------------------------------------
