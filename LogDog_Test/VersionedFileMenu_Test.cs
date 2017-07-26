@@ -58,9 +58,20 @@ namespace LogDog_Test
       _file.AddVersion(file2);
       _file.AddVersion(file3);
 
+      Assert.AreEqual("Favourite?", _testObject.MenuItem.MenuItems[0].Text);
       Assert.AreEqual("2017-07-24 00:00", _testObject.MenuItem.MenuItems[1].Text);
       Assert.AreEqual("2017-07-23 00:00", _testObject.MenuItem.MenuItems[2].Text);
       Assert.AreEqual("2017-07-21 23:59", _testObject.MenuItem.MenuItems[3].Text);
+    }
+
+    //-------------------------------------------------------------------------
+
+    [Test]
+    public void ToggleFavourite()
+    {
+      _testObject.MenuItem.MenuItems[0].PerformClick();
+
+      Assert.True(_testObject.IsFavourite);
     }
 
     //-------------------------------------------------------------------------
