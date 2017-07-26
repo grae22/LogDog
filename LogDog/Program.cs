@@ -239,6 +239,10 @@ namespace LogDog
         {
           var clonedMenu = menuItem.CloneMenu();
           clonedMenu.MenuItems.Clear();
+
+          // TODO: Find a better way to remove the * that indicates a favourite in the detailed menu.
+          clonedMenu.Text = clonedMenu.Text.Replace("*", "");
+
           simpleMenu.MenuItems.Add(clonedMenu);
         }
       }

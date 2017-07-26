@@ -32,11 +32,19 @@ namespace LogDog
     private void BuildMenu()
     {
       MenuItem.Tag = this;
-      MenuItem.Text = File.BaseFilename;
 
-      MenuItem.Click += (sender, args) => Process.Start(File.FileVersions[0].Path);
+      UpdateMenuItemName();
+
+      MenuItem.Click += ( sender, args ) => Process.Start( File.FileVersions[ 0 ].Path );
 
       BuildSubMenus();
+    }
+
+    //-------------------------------------------------------------------------
+
+    private void UpdateMenuItemName()
+    {
+      MenuItem.Text = File.BaseFilename + ( IsFavourite ? "*" : "" );
     }
 
     //-------------------------------------------------------------------------
@@ -67,6 +75,8 @@ namespace LogDog
           {
             IsFavourite = !IsFavourite;
             MenuItem.MenuItems[0].Checked = IsFavourite;
+
+            UpdateMenuItemName();
 
             if (IsFavourite)
             {
