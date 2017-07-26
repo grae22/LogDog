@@ -218,6 +218,9 @@ namespace LogDog
         bool isFavourite = _favourites.Contains(file.Value.BaseFilename.ToLower());
 
         var subMenu = new VersionedFileMenu(file.Value, isFavourite);
+        subMenu.Favourited += OnItemFavourited;
+        subMenu.Unfavourited += OnItemUnfavourited;
+
         menu.MenuItems.Add(subMenu.MenuItem);
       }
       
@@ -230,8 +233,6 @@ namespace LogDog
 
     private static ContextMenu BuildSimpleMenu(ContextMenu detailedMenu)
     {
-      _favourites.Clear();
-
       ContextMenu simpleMenu = new ContextMenu();
 
       foreach (MenuItem menuItem in detailedMenu.MenuItems)
@@ -244,8 +245,6 @@ namespace LogDog
           var clonedMenu = menuItem.CloneMenu();
           clonedMenu.MenuItems.Clear();
           simpleMenu.MenuItems.Add(clonedMenu);
-
-          _favourites.Add(versionedFileMenu.MenuItem.Text.ToLower());
         }
       }
 
@@ -258,10 +257,6 @@ namespace LogDog
             Enabled = false
           });
       }
-
-      Settings.Default.Favourites = string.Join(";", _favourites.ToArray());
-      Settings.Default.Save();
-      Settings.Default.Reload();
 
       return simpleMenu;
     }
@@ -341,6 +336,56 @@ namespace LogDog
 
         _systemTrayIcon.ContextMenu = _detailedMenu;
       }
+    }
+
+    //-------------------------------------------------------------------------
+
+    private static void OnItemFavourited(object sender, EventArgs args)
+    {
+      var file = sender as VersionedFileMenu;
+
+      if (file == null)
+      {
+        return;
+      }
+
+      var baseFilenameLower = file.File.BaseFilename.ToLower();
+
+      if (_favourites.Contains(baseFilenameLower))
+      {
+        return;
+      }
+
+      _favourites.Add(baseFilenameLower);
+
+      Settings.Default.Favourites = string.Join(";", _favourites.ToArray());
+      Settings.Default.Save();
+      Settings.Default.Reload();
+    }
+
+    //-------------------------------------------------------------------------
+
+    private static void OnItemUnfavourited(object sender, EventArgs args)
+    {
+      var file = sender as VersionedFileMenu;
+
+      if (file == null)
+      {
+        return;
+      }
+
+      var baseFilenameLower = file.File.BaseFilename.ToLower();
+
+      if (_favourites.Contains(baseFilenameLower) == false)
+      {
+        return;
+      }
+
+      _favourites.Remove(baseFilenameLower);
+
+      Settings.Default.Favourites = string.Join(";", _favourites.ToArray());
+      Settings.Default.Save();
+      Settings.Default.Reload();
     }
 
     //-------------------------------------------------------------------------
