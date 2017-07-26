@@ -95,5 +95,17 @@ namespace LogDog_Test
     }
 
     //-------------------------------------------------------------------------
+
+    [Test]
+    public void EventRaisedOnFileChange()
+    {
+      _testObject.FileChanged += (sender, args) => { Assert.Pass(); };
+
+      // TODO: Need an IFileSystemWatcher interface so we can fire the event.
+
+      //Assert.Fail();
+    }
+
+    //-------------------------------------------------------------------------
   }
 }

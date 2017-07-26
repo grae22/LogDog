@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -11,8 +12,14 @@ namespace LogDog
     //-------------------------------------------------------------------------
 
     public IReadOnlyDictionary<string, IPAddress> Hosts { get; }
+    public event EventHandler FileChanged;
 
-    private Dictionary<string, IPAddress> _hosts = new Dictionary<string, IPAddress>();
+    private readonly Dictionary<string, IPAddress> _hosts = new Dictionary<string, IPAddress>();
+    private readonly string _hostsFilenameAbs;
+    private readonly string _filterStartText;
+    private readonly string _filterEndText;
+    private FileSystemWatcher _fileSystemWatcher;
+    private DateTime _lastUpdateTime = new DateTime(0);
 
     //-------------------------------------------------------------------------
 
@@ -25,26 +32,65 @@ namespace LogDog
     {
       Hosts = new ReadOnlyDictionary<string, IPAddress>(_hosts);
 
-      ExtractHostsFromFile(hostsFilenameAbs, filterStartText, filterEndText);
+      _hostsFilenameAbs = hostsFilenameAbs;
+      _filterStartText = filterStartText;
+      _filterEndText = filterEndText;
+
+      InitialiseFileSystemWatcher(hostsFilenameAbs);
+      ExtractHostsFromFile();
     }
 
     //-------------------------------------------------------------------------
 
-    private void ExtractHostsFromFile(
-      string hostsFilenameAbs,
-      string filterBlockStartText,
-      string filterBlockEndText)
+    private void InitialiseFileSystemWatcher(string hostsFilenameAbs)
     {
       if (File.Exists(hostsFilenameAbs) == false)
       {
         throw new FileNotFoundException(
-          "File not found.",
+          "Hosts file not found.",
           hostsFilenameAbs);
       }
 
-      string[] lines = File.ReadAllLines(hostsFilenameAbs);
-      lines = GetEntriesWithinBlock(lines, filterBlockStartText, filterBlockEndText);
-      PopulateHosts(lines);
+      _fileSystemWatcher = new FileSystemWatcher(
+        Path.GetDirectoryName(hostsFilenameAbs),
+        Path.GetFileName(hostsFilenameAbs))
+      {
+        EnableRaisingEvents = true
+      };
+
+      _fileSystemWatcher.Changed += OnFileChanged;
+    }
+    
+    //-------------------------------------------------------------------------
+
+    private void OnFileChanged(object sender, FileSystemEventArgs e)
+    {
+      if ((DateTime.Now - _lastUpdateTime).TotalSeconds < 10)
+      {
+        return;
+      }
+
+      _lastUpdateTime = DateTime.Now;
+
+      ExtractHostsFromFile();
+
+      FileChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    //-------------------------------------------------------------------------
+
+    private void ExtractHostsFromFile()
+    {
+      try
+      {
+        string[] lines = File.ReadAllLines(_hostsFilenameAbs);
+        lines = GetEntriesWithinBlock(lines, _filterStartText, _filterEndText);
+        PopulateHosts(lines);
+      }
+      catch (IOException)
+      {
+        // TODO: Log this?
+      }
     }
 
     //-------------------------------------------------------------------------

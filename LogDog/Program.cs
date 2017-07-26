@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -26,6 +25,9 @@ namespace LogDog
     private static ContextMenu _detailedMenu;
     private static List<string> _favourites = new List<string>();
     private static bool _triggerRefresh;
+    private static WindowsHostsFile _hostsFile;
+    private static readonly object _buildContextMenuLock = new object();
+    private static readonly object _refreshLock = new object();
 
     //-------------------------------------------------------------------------
 
@@ -37,6 +39,7 @@ namespace LogDog
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
 
+        InitialiseHostsFile();
         ExtractFavouritesFromSettings();
 
         _systemTrayIcon = new NotifyIcon
@@ -82,6 +85,18 @@ namespace LogDog
       }
 
       Application.Exit();
+    }
+
+    //-------------------------------------------------------------------------
+
+    private static void InitialiseHostsFile()
+    {
+      _hostsFile = new WindowsHostsFile(
+        Environment.ExpandEnvironmentVariables(Settings.Default.HostsFilename),
+        Settings.Default.HostFileBlockStart,
+        Settings.Default.HostFileBlockEnd);
+
+      _hostsFile.FileChanged += OnHostsFileChanged;
     }
 
     //-------------------------------------------------------------------------
@@ -169,61 +184,59 @@ namespace LogDog
 
     private static void BuildContextMenus(out ContextMenu detailedMenu)
     {
-      ContextMenu menu = new ContextMenu();
-
-      var hosts = new WindowsHostsFile(
-        Environment.ExpandEnvironmentVariables(Settings.Default.HostsFilename),
-        Settings.Default.HostFileBlockStart,
-        Settings.Default.HostFileBlockEnd);
-
-      string[] pathsToMonitor = Settings.Default.FoldersToMonitor.Split(';');
-
-      var files = new VersionedFileCollection();
-
-      foreach (var host in hosts.Hosts)
+      lock (_buildContextMenuLock)
       {
-        var fileHost = new FileHost(
-          host.Key,
-          host.Value,
-          pathsToMonitor,
-          Settings.Default.FilenameFilter,
-          new FileSystem());
+        ContextMenu menu = new ContextMenu();
 
-        fileHost.RefreshFilePaths();
+        string[] pathsToMonitor = Settings.Default.FoldersToMonitor.Split(';');
 
-        var now = DateTime.Now;
+        var files = new VersionedFileCollection();
 
-        foreach (var filePath in fileHost.FilePaths)
+        foreach (var host in _hostsFile.Hosts)
         {
-          DateTime lastModified = File.GetLastWriteTime(filePath);
+          var fileHost = new FileHost(
+            host.Key,
+            host.Value,
+            pathsToMonitor,
+            Settings.Default.FilenameFilter,
+            new FileSystem());
 
-          if ((now - lastModified).TotalDays > Settings.Default.HistoryInDays)
+          fileHost.RefreshFilePaths();
+
+          var now = DateTime.Now;
+
+          foreach (var filePath in fileHost.FilePaths)
           {
-            continue;
-          }
+            DateTime lastModified = File.GetLastWriteTime(filePath);
 
-          files.AddFile(
-            new FileInfo
+            if ((now - lastModified).TotalDays > Settings.Default.HistoryInDays)
             {
-              Path = filePath,
-              HostName = host.Key,
-              LastModified = lastModified
-            },
-            true);
+              continue;
+            }
+
+            files.AddFile(
+              new FileInfo
+              {
+                Path = filePath,
+                HostName = host.Key,
+                LastModified = lastModified
+              },
+              true);
+          }
         }
+
+        foreach (var file in files.Files)
+        {
+          bool isFavourite = _favourites.Contains(file.Value.BaseFilename.ToLower());
+
+          var subMenu = new VersionedFileMenu(file.Value, isFavourite);
+          menu.MenuItems.Add(subMenu.MenuItem);
+        }
+
+        AddDefaultMenuOptions(menu);
+
+        detailedMenu = menu;
       }
-
-      foreach (var file in files.Files)
-      {
-        bool isFavourite = _favourites.Contains(file.Value.BaseFilename.ToLower());
-
-        var subMenu = new VersionedFileMenu(file.Value, isFavourite);
-        menu.MenuItems.Add(subMenu.MenuItem);
-      }
-      
-      AddDefaultMenuOptions(menu);
-
-      detailedMenu = menu;
     }
 
     //-------------------------------------------------------------------------
@@ -284,12 +297,7 @@ namespace LogDog
           "&Refresh",
           (sender, args) =>
           {
-            _detailedMenu.MenuItems.Clear();
-            AddUpdatingMenuItem(_detailedMenu);
-            AddExitOption(_detailedMenu);
-            _systemTrayIcon.ContextMenu = _detailedMenu;
-
-            _triggerRefresh = true;
+            PerformRefresh();
           }));
     }
 
@@ -340,6 +348,28 @@ namespace LogDog
           .Invoke(_systemTrayIcon, null);
 
         _systemTrayIcon.ContextMenu = _detailedMenu;
+      }
+    }
+
+    //-------------------------------------------------------------------------
+
+    private static void OnHostsFileChanged(object sender, EventArgs args)
+    {
+      PerformRefresh();
+    }
+
+    //-------------------------------------------------------------------------
+
+    private static void PerformRefresh()
+    {
+      lock (_refreshLock)
+      {
+        _detailedMenu.MenuItems.Clear();
+        AddUpdatingMenuItem(_detailedMenu);
+        AddExitOption(_detailedMenu);
+        _systemTrayIcon.ContextMenu = _detailedMenu;
+
+        _triggerRefresh = true;
       }
     }
 

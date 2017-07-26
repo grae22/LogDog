@@ -21,10 +21,10 @@ namespace LogDog
     //-------------------------------------------------------------------------
 
     public FileHost(string name,
-                   IPAddress ip,
-                   IEnumerable<string> pathsToMonitor,
-                   string filenameFilter,
-                   IFileSystem fileSystem)
+                    IPAddress ip,
+                    IEnumerable<string> pathsToMonitor,
+                    string filenameFilter,
+                    IFileSystem fileSystem)
     {
       Name = name;
       Ip = ip;
