@@ -25,6 +25,7 @@ namespace LogDog
     private static NotifyIcon _systemTrayIcon;
     private static ContextMenu _detailedMenu;
     private static List<string> _favourites = new List<string>();
+    private static bool _triggerRefresh;
 
     //-------------------------------------------------------------------------
 
@@ -104,6 +105,7 @@ namespace LogDog
     private static void Run()
     {
       var setContextMenu = new SetContextMenuDelegate(SetContextMenu);
+      var resetRefreshFlag = new ResetRefreshFlagDelegate(ResetRefreshFlag);
 
       _runnerIsAlive = true;
 
@@ -119,7 +121,16 @@ namespace LogDog
 
           Cursor.Current = Cursors.Default;
 
-          Thread.Sleep(1000 * 60 * 10);
+          for (var i = 0; i < 60 * 10; i++)
+          {
+            Thread.Sleep(1000);
+
+            if (_triggerRefresh)
+            {
+              resetRefreshFlag.Invoke();
+              break;
+            }
+          }
         }
         catch (ThreadInterruptedException)
         {
@@ -143,6 +154,15 @@ namespace LogDog
 
       _systemTrayIcon.ContextMenu?.Dispose();
       _systemTrayIcon.ContextMenu = _detailedMenu;
+    }
+
+    //-------------------------------------------------------------------------
+
+    private delegate void ResetRefreshFlagDelegate();
+
+    private static void ResetRefreshFlag()
+    {
+      _triggerRefresh = false;
     }
 
     //-------------------------------------------------------------------------
@@ -200,8 +220,8 @@ namespace LogDog
         var subMenu = new VersionedFileMenu(file.Value, isFavourite);
         menu.MenuItems.Add(subMenu.MenuItem);
       }
-
-      AddExitOption(menu);
+      
+      AddDefaultMenuOptions(menu);
 
       detailedMenu = menu;
     }
@@ -244,6 +264,33 @@ namespace LogDog
       Settings.Default.Reload();
 
       return simpleMenu;
+    }
+
+    //-------------------------------------------------------------------------
+
+    private static void AddDefaultMenuOptions(ContextMenu menu)
+    {
+      AddRefreshOption(menu);
+      AddExitOption(menu);
+    }
+
+    //-------------------------------------------------------------------------
+
+    private static void AddRefreshOption(ContextMenu menu)
+    {
+      menu.MenuItems.Add("-");
+      menu.MenuItems.Add(
+        new MenuItem(
+          "&Refresh",
+          (sender, args) =>
+          {
+            _detailedMenu.MenuItems.Clear();
+            AddUpdatingMenuItem(_detailedMenu);
+            AddExitOption(_detailedMenu);
+            _systemTrayIcon.ContextMenu = _detailedMenu;
+
+            _triggerRefresh = true;
+          }));
     }
 
     //-------------------------------------------------------------------------
