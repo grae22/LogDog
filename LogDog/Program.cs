@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -113,13 +112,9 @@ namespace LogDog
       {
         try
         {
-          Cursor.Current = Cursors.WaitCursor;
-
           ContextMenu menu;
           BuildContextMenus(out menu);
           setContextMenu.Invoke(menu);
-
-          Cursor.Current = Cursors.Default;
 
           for (var i = 0; i < 60 * 10; i++)
           {
