@@ -1,9 +1,12 @@
-﻿// TODO: This class needs major refactoring.
+﻿// Prioritised requirements:
+// TODO: Switch from ContextMenu to ContextMenuStrip.
+// TODO: x Search function.
+// TODO: x Shortcut keys in simple menu.
+// TODO: x Icon for the 'exit' menu option.
+// TODO: Support multiple host files.
+// TODO: This class needs major refactoring.
 // TODO: Optimise the file scanning logic.
-// TODO: Icon for the 'exit' menu option.
-// TODO: Search function.
-// TODO: Menu item must indicate age of log.
-// TODO: Shortcut keys in simple menu.
+// TODO: Change icon when refreshing.
 
 using System;
 using System.Collections.Generic;
@@ -37,6 +40,8 @@ namespace LogDog
     {
       try
       {
+        AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
+
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
 
@@ -72,6 +77,19 @@ namespace LogDog
           MessageBoxButtons.OK,
           MessageBoxIcon.Error);
       }
+    }
+
+    //-------------------------------------------------------------------------
+
+    private static void UnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs e)
+    {
+      var exception = e.ExceptionObject as Exception;
+
+      MessageBox.Show(
+        $"{exception?.Message}{Environment.NewLine}{Environment.NewLine}{exception?.StackTrace}",
+        "Unhandled Exception",
+        MessageBoxButtons.OK,
+        MessageBoxIcon.Error);
     }
 
     //-------------------------------------------------------------------------

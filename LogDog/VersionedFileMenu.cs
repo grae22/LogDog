@@ -44,7 +44,32 @@ namespace LogDog
 
     private void UpdateMenuItemName()
     {
-      MenuItem.Text = File.BaseFilename + ( IsFavourite ? "*" : "" );
+      var ageString = "";
+
+      if (File.FileVersions.Count > 0)
+      {
+        TimeSpan age = DateTime.Now - File.FileVersions[0].LastModified;
+
+        if (age.TotalDays > 0.99)
+        {
+          ageString = ">1 day";
+        }
+        else if (age.TotalHours > 0.99)
+        {
+          ageString = ">1 hr";
+        }
+        else if (age.TotalMinutes > 10)
+        {
+          ageString = ">10 mins";
+        }
+      }
+
+      MenuItem.Text = $@"{(IsFavourite ? "*" : "")}{File.BaseFilename}";
+
+      if (ageString.Length > 0)
+      {
+        MenuItem.Text += $"\t[{ageString}]";
+      }
     }
 
     //-------------------------------------------------------------------------
