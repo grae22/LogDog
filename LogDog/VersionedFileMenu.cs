@@ -9,17 +9,18 @@ namespace LogDog
     //-------------------------------------------------------------------------
 
     public MenuItem MenuItem { get; } = new MenuItem();
+    public VersionedFile File { get; }
     public bool IsFavourite { get; private set; }
-
-    private readonly VersionedFile _file;
+    public event EventHandler Favourited;
+    public event EventHandler Unfavourited;
 
     //-------------------------------------------------------------------------
 
     public VersionedFileMenu(VersionedFile file,
                              bool isFavourite = false)
     {
-      _file = file;
-      _file.FileAdded += OnFileAdded;
+      File = file;
+      File.FileAdded += OnFileAdded;
 
       IsFavourite = isFavourite;
 
@@ -31,11 +32,19 @@ namespace LogDog
     private void BuildMenu()
     {
       MenuItem.Tag = this;
-      MenuItem.Text = _file.BaseFilename;
 
-      MenuItem.Click += (sender, args) => Process.Start(_file.FileVersions[0].Path);
+      UpdateMenuItemName();
+
+      MenuItem.Click += ( sender, args ) => Process.Start( File.FileVersions[ 0 ].Path );
 
       BuildSubMenus();
+    }
+
+    //-------------------------------------------------------------------------
+
+    private void UpdateMenuItemName()
+    {
+      MenuItem.Text = File.BaseFilename + ( IsFavourite ? "*" : "" );
     }
 
     //-------------------------------------------------------------------------
@@ -44,6 +53,21 @@ namespace LogDog
     {
       MenuItem.MenuItems.Clear();
 
+      AddFavouriteOption();
+
+      foreach (FileInfo file in File.FileVersions)
+      {
+        MenuItem.MenuItems.Add(
+          new MenuItem(
+            file.LastModified.ToString("yyyy-MM-dd HH:mm"),
+            (sender, args) => { Process.Start(file.Path); }));
+      }
+    }
+
+    //-------------------------------------------------------------------------
+
+    private void AddFavouriteOption()
+    {
       MenuItem.MenuItems.Add(
         new MenuItem(
           "Favourite?",
@@ -51,16 +75,20 @@ namespace LogDog
           {
             IsFavourite = !IsFavourite;
             MenuItem.MenuItems[0].Checked = IsFavourite;
-          }));
-      MenuItem.MenuItems[0].Checked = IsFavourite;
 
-      foreach (FileInfo file in _file.FileVersions)
-      {
-        MenuItem.MenuItems.Add(
-          new MenuItem(
-            file.LastModified.ToString("yyyy-MM-dd HH:mm"),
-            (sender, args) => { Process.Start(file.Path); }));
-      }
+            UpdateMenuItemName();
+
+            if (IsFavourite)
+            {
+              Favourited?.Invoke(this, EventArgs.Empty);
+            }
+            else
+            {
+              Unfavourited?.Invoke(this, EventArgs.Empty);
+            }
+          }));
+
+      MenuItem.MenuItems[0].Checked = IsFavourite;
     }
 
     //-------------------------------------------------------------------------

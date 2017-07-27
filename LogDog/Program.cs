@@ -2,7 +2,6 @@
 // TODO: Optimise the file scanning logic.
 // TODO: Icon for the 'exit' menu option.
 // TODO: Search function.
-// TODO: Fix issue where favourites only saved when building the simple menu.
 // TODO: Menu item must indicate age of log.
 // TODO: Shortcut keys in simple menu.
 
@@ -53,7 +52,7 @@ namespace LogDog
         };
         _systemTrayIcon.Click += OnIconClicked;
 
-        AddUpdatingMenuItem(_systemTrayIcon.ContextMenu);
+        AddScanningMenuItem(_systemTrayIcon.ContextMenu);
         AddExitOption(_systemTrayIcon.ContextMenu);
 
         InitialiseRunner();
@@ -130,13 +129,9 @@ namespace LogDog
       {
         try
         {
-          Cursor.Current = Cursors.WaitCursor;
-
           ContextMenu menu;
-          BuildContextMenus(out menu);
+          BuildDetailedContextMenu(out menu);
           setContextMenu.Invoke(menu);
-
-          Cursor.Current = Cursors.Default;
 
           for (var i = 0; i < 60 * 10; i++)
           {
@@ -184,7 +179,7 @@ namespace LogDog
 
     //-------------------------------------------------------------------------
 
-    private static void BuildContextMenus(out ContextMenu detailedMenu)
+    private static void BuildDetailedContextMenu(out ContextMenu detailedMenu)
     {
       lock (_buildContextMenuLock)
       {
@@ -232,6 +227,9 @@ namespace LogDog
           bool isFavourite = _favourites.Contains(file.Value.BaseFilename.ToLower());
 
           var subMenu = new VersionedFileMenu(file.Value, isFavourite);
+          subMenu.Favourited += OnItemFavourited;
+          subMenu.Unfavourited += OnItemUnfavourited;
+
           menu.MenuItems.Add(subMenu.MenuItem);
         }
 
@@ -245,8 +243,6 @@ namespace LogDog
 
     private static ContextMenu BuildSimpleMenu(ContextMenu detailedMenu)
     {
-      _favourites.Clear();
-
       ContextMenu simpleMenu = new ContextMenu();
 
       foreach (MenuItem menuItem in detailedMenu.MenuItems)
@@ -258,9 +254,11 @@ namespace LogDog
         {
           var clonedMenu = menuItem.CloneMenu();
           clonedMenu.MenuItems.Clear();
-          simpleMenu.MenuItems.Add(clonedMenu);
 
-          _favourites.Add(versionedFileMenu.MenuItem.Text.ToLower());
+          // TODO: Find a better way to remove the * that indicates a favourite in the detailed menu.
+          clonedMenu.Text = clonedMenu.Text.Replace("*", "");
+
+          simpleMenu.MenuItems.Add(clonedMenu);
         }
       }
 
@@ -273,10 +271,6 @@ namespace LogDog
             Enabled = false
           });
       }
-
-      Settings.Default.Favourites = string.Join(";", _favourites.ToArray());
-      Settings.Default.Save();
-      Settings.Default.Reload();
 
       return simpleMenu;
     }
@@ -316,11 +310,11 @@ namespace LogDog
 
     //-------------------------------------------------------------------------
 
-    private static void AddUpdatingMenuItem(ContextMenu menu)
+    private static void AddScanningMenuItem(ContextMenu menu)
     {
       var menuItem = new MenuItem
       {
-        Text = "Updating...",
+        Text = "Scanning...",
         Enabled = false
       };
 
@@ -367,12 +361,62 @@ namespace LogDog
       lock (_refreshLock)
       {
         _detailedMenu.MenuItems.Clear();
-        AddUpdatingMenuItem(_detailedMenu);
+        AddScanningMenuItem(_detailedMenu);
         AddExitOption(_detailedMenu);
         _systemTrayIcon.ContextMenu = _detailedMenu;
 
         _triggerRefresh = true;
       }
+    }
+
+    //-------------------------------------------------------------------------
+
+    private static void OnItemFavourited(object sender, EventArgs args)
+    {
+      var file = sender as VersionedFileMenu;
+
+      if (file == null)
+      {
+        return;
+      }
+
+      var baseFilenameLower = file.File.BaseFilename.ToLower();
+
+      if (_favourites.Contains(baseFilenameLower))
+      {
+        return;
+      }
+
+      _favourites.Add(baseFilenameLower);
+
+      Settings.Default.Favourites = string.Join(";", _favourites.ToArray());
+      Settings.Default.Save();
+      Settings.Default.Reload();
+    }
+
+    //-------------------------------------------------------------------------
+
+    private static void OnItemUnfavourited(object sender, EventArgs args)
+    {
+      var file = sender as VersionedFileMenu;
+
+      if (file == null)
+      {
+        return;
+      }
+
+      var baseFilenameLower = file.File.BaseFilename.ToLower();
+
+      if (_favourites.Contains(baseFilenameLower) == false)
+      {
+        return;
+      }
+
+      _favourites.Remove(baseFilenameLower);
+
+      Settings.Default.Favourites = string.Join(";", _favourites.ToArray());
+      Settings.Default.Save();
+      Settings.Default.Reload();
     }
 
     //-------------------------------------------------------------------------
