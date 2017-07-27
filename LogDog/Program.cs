@@ -6,6 +6,7 @@
 // TODO: Support multiple host files.
 // TODO: This class needs major refactoring.
 // TODO: Optimise the file scanning logic.
+// TODO: Filename matchign algorithm needs work (trailing numbers are assumed to be timestamps).
 // TODO: Change icon when refreshing.
 
 using System;
