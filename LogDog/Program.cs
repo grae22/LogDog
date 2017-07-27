@@ -1,8 +1,10 @@
 ﻿// TODO: This class needs major refactoring.
 // TODO: Optimise the file scanning logic.
-// TODO: Detect when the hosts file changes and reload everything.
 // TODO: Icon for the 'exit' menu option.
 // TODO: Search function.
+// TODO: Fix issue where favourites only saved when building the simple menu.
+// TODO: Menu item must indicate age of log.
+// TODO: Shortcut keys in simple menu.
 
 using System;
 using System.Collections.Generic;
