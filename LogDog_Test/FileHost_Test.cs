@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Abstractions;
 using System.Net;
 using System.Linq;
@@ -65,6 +66,49 @@ namespace LogDog_Test
       Assert.AreEqual(2, _testObject.FilePaths.Count);
       Assert.True(_testObject.FilePaths.Contains(@"file1.log"));
       Assert.True(_testObject.FilePaths.Contains(@"file2.log"));
+    }
+
+    //-------------------------------------------------------------------------
+
+    [Test]
+    public void FilePathsDontAccumulateOnRefresh()
+    {
+      _fileSystem.Setup(
+          x => x
+            .Directory
+            .EnumerateFiles(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SearchOption>()))
+        .Returns(
+          new[]
+          {
+            "file1.log",
+            "file2.log"
+          });
+
+      _fileSystem.Setup(x => x.Directory.Exists(It.IsAny<string>())).Returns(true);
+
+      _testObject.RefreshFilePaths();
+      _testObject.RefreshFilePaths();
+
+      Assert.AreEqual(2, _testObject.FilePaths.Count);
+    }
+
+    //-------------------------------------------------------------------------
+
+    [Test]
+    public void HandleFolderDoesntExist()
+    {
+      _fileSystem.Setup(x => x.Directory.Exists(It.IsAny<string>())).Returns(false);
+
+      try
+      {
+        _testObject.RefreshFilePaths();
+      }
+      catch (Exception)
+      {
+        Assert.Fail();
+      }
+
+      Assert.Pass();
     }
 
     //-------------------------------------------------------------------------

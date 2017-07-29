@@ -35,7 +35,7 @@ namespace LogDog
 
       UpdateMenuItemName();
 
-      MenuItem.Click += ( sender, args ) => Process.Start( File.FileVersions[ 0 ].Path );
+      MenuItem.Click += (sender, args) => Process.Start(File.FileVersions[0].Path);
 
       BuildSubMenus();
     }
@@ -44,6 +44,25 @@ namespace LogDog
 
     private void UpdateMenuItemName()
     {
+      string ageString = BuildAgeString();
+
+      MenuItem.Text = $@"{( IsFavourite ? "*" : "" )}{File.BaseFilename}";
+
+      if (ageString.Length > 0)
+      {
+        MenuItem.Text += $"\t[{ageString}]";
+      }
+    }
+
+    //-------------------------------------------------------------------------
+
+    private string BuildAgeString()
+    {
+      if (File.FileVersions.Count == 0)
+      {
+        return "";
+      }
+
       var ageString = "";
 
       if (File.FileVersions.Count > 0)
@@ -64,12 +83,7 @@ namespace LogDog
         }
       }
 
-      MenuItem.Text = $@"{(IsFavourite ? "*" : "")}{File.BaseFilename}";
-
-      if (ageString.Length > 0)
-      {
-        MenuItem.Text += $"\t[{ageString}]";
-      }
+      return ageString;
     }
 
     //-------------------------------------------------------------------------

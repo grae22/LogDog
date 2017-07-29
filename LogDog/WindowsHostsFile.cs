@@ -19,7 +19,6 @@ namespace LogDog
     private readonly string _filterStartText;
     private readonly string _filterEndText;
     private FileSystemWatcher _fileSystemWatcher;
-    private DateTime _lastUpdateTime = new DateTime(0);
 
     //-------------------------------------------------------------------------
 
@@ -65,13 +64,6 @@ namespace LogDog
 
     private void OnFileChanged(object sender, FileSystemEventArgs e)
     {
-      if ((DateTime.Now - _lastUpdateTime).TotalSeconds < 10)
-      {
-        return;
-      }
-
-      _lastUpdateTime = DateTime.Now;
-
       ExtractHostsFromFile();
 
       FileChanged?.Invoke(this, EventArgs.Empty);

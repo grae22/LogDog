@@ -38,6 +38,8 @@ namespace LogDog
 
     public void RefreshFilePaths()
     {
+      _filePaths.Clear();
+
       foreach (var path in _pathsToMonitor)
       {
         var pathWithoutLeadingOrTrailingPathSeparators =

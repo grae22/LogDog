@@ -111,5 +111,62 @@ namespace LogDog_Test
     }
 
     //-------------------------------------------------------------------------
+
+    [Test]
+    public void MenuItemTextContainsAgeString_day()
+    {
+      var file = new FileInfo
+      {
+        Path = "File1",
+        HostName = "Host",
+        LastModified = DateTime.Now.AddDays(-1)
+      };
+
+      _file.AddVersion(file);
+
+      _testObject = new VersionedFileMenu(_file);
+
+      Assert.True(_testObject.MenuItem.Text.Contains(">1 day"));
+    }
+
+    //-------------------------------------------------------------------------
+
+    [Test]
+    public void MenuItemTextContainsAgeString_hour()
+    {
+      var file = new FileInfo
+      {
+        Path = "File1",
+        HostName = "Host",
+        LastModified = DateTime.Now.AddHours(-1)
+      };
+
+      _file.AddVersion(file);
+
+      _testObject = new VersionedFileMenu(_file);
+
+      Assert.True(_testObject.MenuItem.Text.Contains(">1 hr"));
+    }
+
+    //-------------------------------------------------------------------------
+
+    [Test]
+    public void MenuItemTextContainsAgeString_10mins()
+    {
+      var file = new FileInfo
+      {
+        Path = "File1",
+        HostName = "Host",
+        LastModified = DateTime.Now.AddMinutes(-10)
+      };
+
+      _file.AddVersion(file);
+
+      _testObject = new VersionedFileMenu(_file);
+
+      Assert.True(_testObject.MenuItem.Text.Contains(">10 mins"));
+    }
+
+    //-------------------------------------------------------------------------
   }
 }
